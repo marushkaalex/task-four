@@ -20,6 +20,11 @@ public class JdbcDaoFactory extends DaoFactory {
     }
 
     @Override
+    public void release() {
+        ConnectionPool.getInstance().releaseConnection(connection);
+    }
+
+    @Override
     public UserDao getUserDao() {
         return new JdbcUserDao(connection);
     }

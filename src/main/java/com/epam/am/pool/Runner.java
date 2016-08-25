@@ -23,5 +23,7 @@ public class Runner {
         System.out.println(user);
         userDao.save(user);
         System.out.println(user);
+        daoFactory.release();
+        ConnectionPool.getInstance().shutDown();
     }
 }

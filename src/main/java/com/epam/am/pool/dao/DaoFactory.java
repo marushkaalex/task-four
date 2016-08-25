@@ -12,5 +12,9 @@ public abstract class DaoFactory {
         }
     }
 
+    public void release() {
+
+    };
+
     public abstract UserDao getUserDao();
 }

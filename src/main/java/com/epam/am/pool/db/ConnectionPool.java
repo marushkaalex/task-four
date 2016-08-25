@@ -15,6 +15,7 @@ public class ConnectionPool {
     private static ConnectionPool instance;
 
     private BlockingQueue<Connection> connectionQueue;
+    private BlockingQueue<Connection> usedConnectionQueue;
     private final long timeout;
 
     private ConnectionPool(Properties properties) throws ConnectionPoolException {
@@ -27,6 +28,7 @@ public class ConnectionPool {
             timeout = Long.parseLong(properties.getProperty("cp.timeout", DEFAULT_TIMEOUT));
 
             connectionQueue = new ArrayBlockingQueue<>(count);
+            usedConnectionQueue = new ArrayBlockingQueue<>(count);
 
             for (int i = 0; i < count; i++) {
                 Connection connection = new ConnectionWrapper(DriverManager.getConnection(
@@ -44,6 +46,11 @@ public class ConnectionPool {
 
     public void releaseConnection(Connection connection) {
         connectionQueue.add(connection);
+        usedConnectionQueue.remove(connection);
+    }
+
+    public void shutDown() {
+
     }
 
     public static void init(Properties properties) throws ConnectionPoolException {
@@ -56,7 +63,9 @@ public class ConnectionPool {
 
     public Connection getConnection() throws ConnectionPoolException {
         try {
-            return connectionQueue.poll(timeout, TimeUnit.MILLISECONDS);
+            Connection connection = connectionQueue.poll(timeout, TimeUnit.MILLISECONDS);
+            usedConnectionQueue.put(connection);
+            return connection;
         } catch (InterruptedException e) {
             throw new ConnectionPoolException(e);
         }
